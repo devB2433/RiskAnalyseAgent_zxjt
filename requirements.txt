@@ -1,0 +1,38 @@
+# Agent Framework Requirements
+
+# Core dependencies
+langchain>=0.2.0
+langchain-openai>=0.1.0
+langchain-core>=0.2.0
+python-dotenv>=1.0.0
+
+# Data Ingestion Layer
+aiofiles>=23.0.0          # 异步文件操作
+aiohttp>=3.9.0            # HTTP客户端
+
+# Optional: File parsing
+openpyxl>=3.1.0           # Excel支持
+
+# Optional: Database drivers
+# asyncpg>=0.29.0         # PostgreSQL
+# aiomysql>=0.2.0         # MySQL
+# aiosqlite>=0.19.0       # SQLite
+# motor>=3.3.0            # MongoDB
+
+# Optional: Streaming
+# websockets>=12.0        # WebSocket
+# aiokafka>=0.10.0        # Kafka
+
+# Scheduler
+APScheduler>=3.10.0        # 任务调度
+
+# Storage
+SQLAlchemy>=2.0.0          # ORM
+aiosqlite>=0.19.0          # SQLite异步驱动
+# asyncpg>=0.29.0          # PostgreSQL异步驱动（可选）
+
+# Development dependencies
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+# black>=23.0.0
+# flake8>=6.0.0
