@@ -31,6 +31,13 @@ SQLAlchemy>=2.0.0          # ORM
 aiosqlite>=0.19.0          # SQLite异步驱动
 # asyncpg>=0.29.0          # PostgreSQL异步驱动（可选）
 
+# Configuration
+PyYAML>=6.0                # YAML配置文件
+
+# Notification
+aiohttp>=3.9.0             # HTTP客户端（飞书/企业微信webhook）
+aiosmtplib>=3.0.0          # 异步SMTP邮件
+
 # Development dependencies
 pytest>=7.4.0
 pytest-asyncio>=0.21.0

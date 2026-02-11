@@ -1,0 +1,99 @@
+# RiskAnalyseAgent 默认配置
+# 可通过自定义配置文件或环境变量覆盖
+
+app_name: RiskAnalyseAgent
+env: development
+debug: false
+
+# 数据库配置
+database:
+  url: "sqlite:///data/security_analysis.db"
+  async_url: "sqlite+aiosqlite:///data/security_analysis.db"
+  echo: false
+  pool_size: 5
+  max_overflow: 10
+  pool_recycle: 3600
+
+# 调度器配置
+scheduler:
+  timezone: "Asia/Shanghai"
+  max_workers: 10
+  job_defaults_coalesce: true
+  job_defaults_max_instances: 3
+  misfire_grace_time: 60
+
+# 分析引擎配置
+analysis:
+  default_model: "gpt-4"
+  fallback_model: "gpt-3.5-turbo"
+  temperature: 0.1
+  max_tokens: 4096
+  confidence_threshold: 0.7
+  alert_threshold: 0.8
+  batch_size: 50
+  enabled_analyzers:
+    - compromised_host
+    - anomalous_login
+    - data_exfiltration
+    - malware_detection
+    - insider_threat
+    - ddos_detection
+    - lateral_movement
+    - phishing_detection
+
+# 威胁情报配置
+threat_intel:
+  enabled: true
+  cache_ttl: 3600
+  cache_dir: "data/threat_intel_cache"
+  virustotal_api_key: ""
+  abuseipdb_api_key: ""
+  use_mock: true
+
+# 通知配置
+notification:
+  min_severity: "medium"
+  cooldown_minutes: 30
+  batch_interval_seconds: 60
+
+  # 飞书通知
+  feishu:
+    enabled: false
+    webhook_url: ""
+    secret: ""
+    at_all_on_critical: true
+
+  # 企业微信通知
+  wecom:
+    enabled: false
+    webhook_url: ""
+    mentioned_list: []
+    mentioned_mobile_list: []
+
+  # 邮件通知
+  email:
+    enabled: false
+    smtp_host: "smtp.example.com"
+    smtp_port: 587
+    smtp_use_tls: true
+    username: ""
+    password: ""
+    from_addr: ""
+    to_addrs: []
+    cc_addrs: []
+
+# 日志配置
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: "logs/security_analysis.log"
+  max_bytes: 10485760
+  backup_count: 5
+  console_output: true
+
+# 存储配置
+storage:
+  data_retention_days: 90
+  export_dir: "data/exports"
+  auto_cleanup: true
+  cleanup_cron: "0 2 * * *"
