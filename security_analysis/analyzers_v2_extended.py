@@ -36,7 +36,7 @@ class AnomalousLoginAnalyzer(BaseAgent):
         })
 
         chain = self.framework.create_chain([
-            """分析以下安全日志，识别异常登录行为。
+            """分析以下安全日志统计摘要和可疑日志，识别异常登录行为。
 重点关注：
 1. 异地登录（地理位置异常）
 2. 非工作时间登录
@@ -44,7 +44,7 @@ class AnomalousLoginAnalyzer(BaseAgent):
 4. 同一账号多地同时登录
 5. 使用已知恶意IP登录
 
-日志数据：{input}""",
+日志统计摘要 + 可疑日志 + 过滤摘要：{input}""",
             """基于分析结果，提取：
 1. 异常登录事件列表
 2. 涉及的用户账号
@@ -57,7 +57,10 @@ class AnomalousLoginAnalyzer(BaseAgent):
 
         logs_text = self._format_logs(logs)
         chain_state = AgentState()
-        chain_state["input"] = logs_text
+        if "preprocessed_input" in state:
+            chain_state["input"] = state["preprocessed_input"]
+        else:
+            chain_state["input"] = logs_text
         result = await chain.execute(chain_state)
         analysis_text = result.get("output", "")
 
@@ -116,7 +119,7 @@ class DataExfiltrationAnalyzer(BaseAgent):
         trace.append({"type": "analyzer_start", "analyzer": self.config.name, "log_count": len(logs)})
 
         chain = self.framework.create_chain([
-            """分析以下安全日志，识别数据外泄行为。
+            """分析以下安全日志统计摘要和可疑日志，识别数据外泄行为。
 重点关注：
 1. 异常大量数据传输（上传流量远超正常）
 2. 向外部IP/域名传输敏感数据
@@ -124,7 +127,7 @@ class DataExfiltrationAnalyzer(BaseAgent):
 4. 使用非标准端口传输数据
 5. DNS隧道数据外泄
 
-日志数据：{input}""",
+日志统计摘要 + 可疑日志 + 过滤摘要：{input}""",
             """生成数据外泄检测报告：
 1. 可疑数据传输事件
 2. 涉及的源/目标地址
@@ -137,7 +140,10 @@ class DataExfiltrationAnalyzer(BaseAgent):
 
         logs_text = "\n".join(str(l) for l in logs[:50])
         chain_state = AgentState()
-        chain_state["input"] = logs_text
+        if "preprocessed_input" in state:
+            chain_state["input"] = state["preprocessed_input"]
+        else:
+            chain_state["input"] = logs_text
         result = await chain.execute(chain_state)
         analysis_text = result.get("output", "")
 
@@ -190,7 +196,7 @@ class InsiderThreatAnalyzer(BaseAgent):
         trace.append({"type": "analyzer_start", "analyzer": self.config.name, "log_count": len(logs)})
 
         chain = self.framework.create_chain([
-            """分析以下安全日志，识别内部威胁行为。
+            """分析以下安全日志统计摘要和可疑日志，识别内部威胁行为。
 重点关注：
 1. 权限提升尝试
 2. 访问非授权资源
@@ -198,7 +204,7 @@ class InsiderThreatAnalyzer(BaseAgent):
 4. 账号共享或凭证滥用
 5. 离职前异常行为模式
 
-日志数据：{input}""",
+日志统计摘要 + 可疑日志 + 过滤摘要：{input}""",
             """生成内部威胁检测报告：
 1. 可疑内部行为事件
 2. 涉及的用户和资源
@@ -211,7 +217,10 @@ class InsiderThreatAnalyzer(BaseAgent):
 
         logs_text = "\n".join(str(l) for l in logs[:50])
         chain_state = AgentState()
-        chain_state["input"] = logs_text
+        if "preprocessed_input" in state:
+            chain_state["input"] = state["preprocessed_input"]
+        else:
+            chain_state["input"] = logs_text
         result = await chain.execute(chain_state)
         analysis_text = result.get("output", "")
 
@@ -269,7 +278,7 @@ class DDoSDetectionAnalyzer(BaseAgent):
         trace.append({"type": "analyzer_start", "analyzer": self.config.name, "log_count": len(logs)})
 
         chain = self.framework.create_chain([
-            """分析以下安全日志，识别DDoS攻击。
+            """分析以下安全日志统计摘要和可疑日志，识别DDoS攻击。
 重点关注：
 1. 短时间内大量请求（SYN Flood, UDP Flood）
 2. 来自多个IP的协同攻击
@@ -277,7 +286,7 @@ class DDoSDetectionAnalyzer(BaseAgent):
 4. 应用层攻击（HTTP Flood, Slowloris）
 5. DNS放大攻击
 
-日志数据：{input}""",
+日志统计摘要 + 可疑日志 + 过滤摘要：{input}""",
             """生成DDoS检测报告：
 1. 攻击类型判定
 2. 攻击源IP列表
@@ -290,7 +299,10 @@ class DDoSDetectionAnalyzer(BaseAgent):
 
         logs_text = "\n".join(str(l) for l in logs[:50])
         chain_state = AgentState()
-        chain_state["input"] = logs_text
+        if "preprocessed_input" in state:
+            chain_state["input"] = state["preprocessed_input"]
+        else:
+            chain_state["input"] = logs_text
         result = await chain.execute(chain_state)
         analysis_text = result.get("output", "")
 
@@ -345,7 +357,7 @@ class LateralMovementAnalyzer(BaseAgent):
         trace.append({"type": "analyzer_start", "analyzer": self.config.name, "log_count": len(logs)})
 
         chain = self.framework.create_chain([
-            """分析以下安全日志，识别横向移动行为。
+            """分析以下安全日志统计摘要和可疑日志，识别横向移动行为。
 重点关注：
 1. 内网主机间异常RDP/SSH连接
 2. Pass-the-Hash/Pass-the-Ticket攻击
@@ -353,7 +365,7 @@ class LateralMovementAnalyzer(BaseAgent):
 4. 异常的SMB文件共享访问
 5. 内网扫描行为（端口扫描、服务发现）
 
-日志数据：{input}""",
+日志统计摘要 + 可疑日志 + 过滤摘要：{input}""",
             """生成横向移动检测报告：
 1. 横向移动路径图
 2. 涉及的主机和账号
@@ -366,7 +378,10 @@ class LateralMovementAnalyzer(BaseAgent):
 
         logs_text = "\n".join(str(l) for l in logs[:50])
         chain_state = AgentState()
-        chain_state["input"] = logs_text
+        if "preprocessed_input" in state:
+            chain_state["input"] = state["preprocessed_input"]
+        else:
+            chain_state["input"] = logs_text
         result = await chain.execute(chain_state)
         analysis_text = result.get("output", "")
 

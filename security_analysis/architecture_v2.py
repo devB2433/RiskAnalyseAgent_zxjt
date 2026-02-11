@@ -23,6 +23,10 @@ from src.threat_intel.manager import ThreatIntelManager
 from src.threat_intel.base import IOCType, ThreatIntelConfig
 from src.threat_intel.providers import VirusTotalProvider, AbuseIPDBProvider
 
+# 导入预处理模块
+from security_analysis.prefilter import LogPreFilter
+from security_analysis.preprocessor import LogPreprocessor
+
 
 # ==================== 数据模型 ====================
 
@@ -205,14 +209,14 @@ class CompromisedHostAnalyzer(BaseAgent):
 
         # 创建分析链
         chain = self.framework.create_chain([
-            """分析以下安全日志，识别可能的失陷主机。
+            """分析以下安全日志统计摘要和可疑日志，识别可能的失陷主机。
 重点关注：
 1. 异常网络连接（连接已知C2服务器）
 2. 异常进程启动
 3. 异常文件访问
 4. 异常DNS查询
 
-日志数据：{input}""",
+日志统计摘要 + 可疑日志 + 过滤摘要：{input}""",
 
             """基于以上分析，提取以下信息：
 1. 可疑IP地址列表
@@ -232,9 +236,11 @@ class CompromisedHostAnalyzer(BaseAgent):
         ])
 
         # 准备日志数据
-        logs_text = self._format_logs(logs)
         chain_state = AgentState()
-        chain_state["input"] = logs_text
+        if "preprocessed_input" in state:
+            chain_state["input"] = state["preprocessed_input"]
+        else:
+            chain_state["input"] = self._format_logs(logs)
 
         trace.append({
             "type": "prompt_chain",
@@ -343,7 +349,7 @@ class MalwareDetectionAnalyzer(BaseAgent):
         })
 
         chain = self.framework.create_chain([
-            """分析以下EDR和系统日志，识别恶意软件活动。
+            """分析以下EDR和系统日志统计摘要及可疑日志，识别恶意软件活动。
 重点关注：
 1. 可疑进程启动（未知程序、异常路径）
 2. 文件哈希匹配已知恶意软件
@@ -351,7 +357,7 @@ class MalwareDetectionAnalyzer(BaseAgent):
 4. 网络通信特征（C2连接、DGA域名）
 5. 持久化机制（启动项、计划任务）
 
-日志数据：{input}""",
+日志统计摘要 + 可疑日志 + 过滤摘要：{input}""",
 
             """基于以上分析，提取以下信息：
 1. 可疑进程列表（进程名、路径、哈希、父进程）
@@ -374,7 +380,10 @@ class MalwareDetectionAnalyzer(BaseAgent):
 
         logs_text = self._format_logs(logs)
         chain_state = AgentState()
-        chain_state["input"] = logs_text
+        if "preprocessed_input" in state:
+            chain_state["input"] = state["preprocessed_input"]
+        else:
+            chain_state["input"] = logs_text
 
         trace.append({
             "type": "prompt_chain",
@@ -483,7 +492,7 @@ class PhishingDetectionAnalyzer(BaseAgent):
         })
 
         chain = self.framework.create_chain([
-            """分析以下邮件和Web访问日志，识别钓鱼攻击。
+            """分析以下邮件和Web访问日志统计摘要及可疑日志，识别钓鱼攻击。
 重点关注：
 1. 可疑邮件（伪造发件人、钓鱼链接、恶意附件）
 2. 钓鱼网站访问（仿冒域名、SSL证书异常）
@@ -491,7 +500,7 @@ class PhishingDetectionAnalyzer(BaseAgent):
 4. 点击率分析（大量用户点击同一链接）
 5. 攻击时间和目标
 
-日志数据：{input}""",
+日志统计摘要 + 可疑日志 + 过滤摘要：{input}""",
 
             """基于以上分析，提取以下信息：
 1. 钓鱼邮件特征（发件人、主题、内容特征）
@@ -514,7 +523,10 @@ class PhishingDetectionAnalyzer(BaseAgent):
 
         logs_text = self._format_logs(logs)
         chain_state = AgentState()
-        chain_state["input"] = logs_text
+        if "preprocessed_input" in state:
+            chain_state["input"] = state["preprocessed_input"]
+        else:
+            chain_state["input"] = logs_text
 
         trace.append({
             "type": "prompt_chain",
@@ -637,6 +649,8 @@ class SecurityAnalysisRouter:
     def __init__(self, framework: UniversalAgentFramework, threat_intel: ThreatIntelToolkit):
         self.framework = framework
         self.threat_intel = threat_intel
+        self.prefilter = LogPreFilter()
+        self.preprocessor = LogPreprocessor()
         self.analyzers = {
             AnalysisType.COMPROMISED_HOST.value: CompromisedHostAnalyzer(framework, threat_intel),
             AnalysisType.MALWARE_DETECTION.value: MalwareDetectionAnalyzer(framework, threat_intel),
@@ -665,6 +679,23 @@ class SecurityAnalysisRouter:
             "router": "SecurityAnalysisRouter",
             "analysis_type": analysis_type,
             "selected_analyzer": analyzer.config.name,
+        })
+
+        # 日志预处理：规则过滤 + 统计摘要
+        filter_result = self.prefilter.filter(logs, analysis_type)
+        suspicious_logs = [fl.log for fl in filter_result.suspicious_logs]
+        summary = self.preprocessor.summarize(
+            suspicious_logs, analysis_type, filtered_from=len(logs)
+        )
+        state["preprocessed_input"] = (
+            filter_result.format_filter_summary() + "\n\n" + summary.format_for_llm()
+        )
+        state["trace"].append({
+            "type": "preprocessing",
+            "total_logs": len(logs),
+            "suspicious_logs": len(suspicious_logs),
+            "filter_ratio": f"{filter_result.filter_ratio*100:.1f}%",
+            "reason_counts": filter_result.reason_counts,
         })
 
         result_state = await analyzer.execute(state)
