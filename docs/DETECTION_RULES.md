@@ -399,10 +399,29 @@ self.analyzers["custom_detection"] = CustomAnalyzer(framework)
 
 ## 📈 性能优化
 
-### 1. 日志预处理
-- 过滤无关日志
-- 限制日志数量（默认100条）
-- 按时间窗口分析
+### 1. 日志预处理（已实现）
+
+系统已实现完整的两层预处理管道，替代了原有的硬编码截断方式：
+
+**数据流**: `SecurityLog[] → PreFilter(规则筛选) → Preprocessor(统计摘要+采样) → prompt chain`
+
+**LogPreFilter** (`security_analysis/prefilter.py`):
+- 12种过滤原因（FilterReason枚举）
+- 通用规则：告警动作、非工作时间、高频源IP、已知恶意端口
+- 8种分析器专属规则集
+- 风险评分计算
+
+**LogPreprocessor** (`security_analysis/preprocessor.py`):
+- 通用统计：IP频次、时间分布、协议/动作/端口分布、连接对
+- 8种分析器专属统计方法
+- 优先采样策略（告警/异常优先，补充均匀采样，默认20条）
+
+**配置** (`config/default.yaml` → `preprocessing`段):
+- `prefilter_enabled` / `preprocessor_enabled` 开关
+- `sample_size`: 采样数量（默认20）
+- `top_n`: Top统计数量（默认15）
+- `work_hours`: 工作时间范围
+- `high_freq_threshold`: 高频阈值
 
 ### 2. 并行分析
 ```python

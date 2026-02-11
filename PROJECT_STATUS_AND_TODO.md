@@ -109,7 +109,7 @@
 
 ---
 
-### 6. 安全分析系统 (60%)
+### 6. 安全分析系统 (100%)
 
 **位置**: `security_analysis/`
 
@@ -129,13 +129,25 @@
 
 #### 6.3 V2版本（真实威胁情报）
 - ✅ `architecture_v2.py` - 集成真实威胁情报
-- ✅ 已实现3种分析器：
-  - CompromisedHostAnalyzer
-  - MalwareDetectionAnalyzer
-  - PhishingDetectionAnalyzer
-- ⚠️ **待完成**: 其余5种分析器的V2版本
+- ✅ 全部8种分析器V2版本已完成
+- ✅ `analyzers_v2_extended.py` - 5个扩展分析器
 
-**状态**: 部分完成，需要补充V2版本的分析器
+#### 6.4 日志预处理系统（新增）
+- ✅ `prefilter.py` - 规则预过滤器
+  - 12种过滤原因（FilterReason枚举）
+  - 通用规则：告警动作、非工作时间、高频源IP、已知恶意端口
+  - 8种分析器专属规则集
+  - 风险评分计算
+- ✅ `preprocessor.py` - 统计摘要 + 采样
+  - 通用统计：IP频次、时间分布、协议/动作/端口分布、连接对
+  - 8种分析器专属统计方法
+  - 优先采样策略（告警/异常优先，补充均匀采样）
+- ✅ 集成到 SecurityAnalysisRouter.route_analysis()
+- ✅ 全部8个分析器支持 preprocessed_input 回退机制
+
+**数据流**: `SecurityLog[] → PreFilter(规则筛选) → Preprocessor(统计摘要+采样) → prompt chain`
+
+**状态**: 完成，生产可用
 
 ---
 
