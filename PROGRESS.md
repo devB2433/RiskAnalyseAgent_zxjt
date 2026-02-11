@@ -26,6 +26,7 @@
 | 监控指标系统 | ✅ | MetricsCollector + HealthChecker |
 | 威胁情报增强 | ✅ | AlienVault OTX/Shodan/GreyNoise/URLhaus 完整实现 |
 | 单元测试 | ✅ | 132个测试全部通过 |
+| 项目文档 | ✅ | 架构文档/部署指南/配置指南/运维手册 |
 
 ## 测试状态
 
