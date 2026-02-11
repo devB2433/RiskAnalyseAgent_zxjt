@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  risk-agent:
+    build: .
+    container_name: risk-analyse-agent
+    restart: unless-stopped
+    environment:
+      - RISK_AGENT_ENV=production
+      - RISK_AGENT_CONFIG=/app/config/production.yaml
+      - RISK_AGENT_DB_URL=sqlite:///app/data/security_analysis.db
+      - RISK_AGENT_LOG_LEVEL=INFO
+      # 威胁情报API密钥（通过.env文件或环境变量注入）
+      - VIRUSTOTAL_API_KEY=${VIRUSTOTAL_API_KEY:-}
+      - ABUSEIPDB_API_KEY=${ABUSEIPDB_API_KEY:-}
+      # 通知配置
+      - FEISHU_WEBHOOK_URL=${FEISHU_WEBHOOK_URL:-}
+      - FEISHU_SECRET=${FEISHU_SECRET:-}
+      - WECOM_WEBHOOK_URL=${WECOM_WEBHOOK_URL:-}
+      - SMTP_HOST=${SMTP_HOST:-}
+      - SMTP_PORT=${SMTP_PORT:-587}
+      - SMTP_USERNAME=${SMTP_USERNAME:-}
+      - SMTP_PASSWORD=${SMTP_PASSWORD:-}
+      - SMTP_FROM=${SMTP_FROM:-}
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - ./config:/app/config:ro
+    networks:
+      - risk-agent-net
+
+  # PostgreSQL（可选，生产环境推荐）
+  # postgres:
+  #   image: postgres:15-alpine
+  #   container_name: risk-agent-db
+  #   restart: unless-stopped
+  #   environment:
+  #     POSTGRES_DB: security_analysis
+  #     POSTGRES_USER: ${DB_USER:-risk_agent}
+  #     POSTGRES_PASSWORD: ${DB_PASSWORD:-changeme}
+  #   volumes:
+  #     - pgdata:/var/lib/postgresql/data
+  #   networks:
+  #     - risk-agent-net
+
+networks:
+  risk-agent-net:
+    driver: bridge
+
+# volumes:
+#   pgdata:

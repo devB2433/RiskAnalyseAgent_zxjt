@@ -1,0 +1,66 @@
+# RiskAnalyseAgent 生产环境配置
+# 敏感信息通过环境变量注入
+
+app_name: RiskAnalyseAgent
+env: production
+debug: false
+
+database:
+  url: "sqlite:///data/security_analysis.db"
+  async_url: "sqlite+aiosqlite:///data/security_analysis.db"
+  echo: false
+  pool_size: 10
+  max_overflow: 20
+
+scheduler:
+  timezone: "Asia/Shanghai"
+  max_workers: 20
+  job_defaults_coalesce: true
+  job_defaults_max_instances: 5
+
+analysis:
+  default_model: "gpt-4"
+  fallback_model: "gpt-3.5-turbo"
+  temperature: 0.1
+  confidence_threshold: 0.7
+  alert_threshold: 0.8
+  batch_size: 100
+  enabled_analyzers:
+    - compromised_host
+    - anomalous_login
+    - data_exfiltration
+    - malware_detection
+    - insider_threat
+    - ddos_detection
+    - lateral_movement
+    - phishing_detection
+
+threat_intel:
+  enabled: true
+  cache_ttl: 7200
+  use_mock: false
+
+notification:
+  min_severity: "medium"
+  cooldown_minutes: 30
+  feishu:
+    enabled: false
+    at_all_on_critical: true
+  wecom:
+    enabled: false
+  email:
+    enabled: false
+    smtp_port: 587
+    smtp_use_tls: true
+
+logging:
+  level: "INFO"
+  file: "logs/security_analysis.log"
+  max_bytes: 52428800
+  backup_count: 10
+  console_output: true
+
+storage:
+  data_retention_days: 180
+  export_dir: "data/exports"
+  auto_cleanup: true
