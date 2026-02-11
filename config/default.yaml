@@ -97,3 +97,20 @@ storage:
   export_dir: "data/exports"
   auto_cleanup: true
   cleanup_cron: "0 2 * * *"
+
+# 日志预处理配置
+preprocessing:
+  prefilter_enabled: true
+  preprocessor_enabled: true
+  sample_size: 20
+  top_n: 15
+  work_hours: [8, 20]
+  large_transfer_threshold: 10000000
+  high_freq_threshold: 50
+
+# 监控配置
+monitoring:
+  enabled: true
+  health_check_interval: 60
+  metrics_log_interval: 300
+  metrics_export_path: "data/metrics.json"

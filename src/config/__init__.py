@@ -13,6 +13,7 @@ from .settings import (
     EmailNotificationConfig,
     LoggingConfig,
     StorageConfig,
+    MonitoringConfig,
     get_settings,
     reload_settings,
 )
@@ -29,6 +30,7 @@ __all__ = [
     "EmailNotificationConfig",
     "LoggingConfig",
     "StorageConfig",
+    "MonitoringConfig",
     "get_settings",
     "reload_settings",
 ]

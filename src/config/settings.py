@@ -175,6 +175,19 @@ class StorageConfig:
 
 
 @dataclass
+class MonitoringConfig:
+    """监控配置"""
+    enabled: bool = True
+    health_check_interval: int = 60
+    metrics_log_interval: int = 300
+    metrics_export_path: str = "data/metrics.json"
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "MonitoringConfig":
+        return cls(**{k: v for k, v in data.items() if k in cls.__dataclass_fields__})
+
+
+@dataclass
 class Settings:
     """全局配置"""
     app_name: str = "RiskAnalyseAgent"
@@ -187,6 +200,7 @@ class Settings:
     notification: NotificationConfig = field(default_factory=NotificationConfig)
     logging: LoggingConfig = field(default_factory=LoggingConfig)
     storage: StorageConfig = field(default_factory=StorageConfig)
+    monitoring: MonitoringConfig = field(default_factory=MonitoringConfig)
 
     @classmethod
     def from_dict(cls, data: dict) -> "Settings":
@@ -201,6 +215,7 @@ class Settings:
             notification=NotificationConfig.from_dict(data.get("notification", {})),
             logging=LoggingConfig.from_dict(data.get("logging", {})),
             storage=StorageConfig.from_dict(data.get("storage", {})),
+            monitoring=MonitoringConfig.from_dict(data.get("monitoring", {})),
         )
 
     @classmethod
