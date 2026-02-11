@@ -17,6 +17,8 @@ from .analysis_jobs import (
     DataFetchAndAnalysisJob
 )
 
+from .persistent_analysis_job import PersistentAnalysisJob
+
 __all__ = [
     # 数据拉取Job
     "BaseFetchJob",
@@ -28,4 +30,6 @@ __all__ = [
     "AnalysisJob",
     "BatchAnalysisJob",
     "DataFetchAndAnalysisJob",
+    # 持久化分析Job
+    "PersistentAnalysisJob",
 ]

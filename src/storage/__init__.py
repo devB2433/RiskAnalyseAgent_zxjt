@@ -52,4 +52,6 @@ __all__ = [
     "TaskHistoryRepository",
     "IOCRecordRepository",
     "SystemConfigRepository",
+    # Service
+    "StorageService",
 ]
