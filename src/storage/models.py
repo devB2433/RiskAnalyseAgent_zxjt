@@ -67,7 +67,7 @@ class AnalysisResult(Base):
     # 索引
     __table_args__ = (
         Index("idx_analysis_type_time", "analysis_type", "start_time"),
-        Index("idx_status_time", "status", "start_time"),
+        Index("idx_analysis_status_time", "status", "start_time"),
     )
 
 
@@ -144,8 +144,8 @@ class TaskHistory(Base):
 
     # 索引
     __table_args__ = (
-        Index("idx_job_id_time", "job_id", "start_time"),
-        Index("idx_status_time", "status", "start_time"),
+        Index("idx_task_job_id_time", "job_id", "start_time"),
+        Index("idx_task_status_time", "status", "start_time"),
         Index("idx_job_type_time", "job_type", "start_time"),
     )
 
