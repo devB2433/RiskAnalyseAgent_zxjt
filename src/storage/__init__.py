@@ -29,6 +29,8 @@ from .repository import (
     SystemConfigRepository
 )
 
+from .service import StorageService
+
 __all__ = [
     # Models
     "Base",
